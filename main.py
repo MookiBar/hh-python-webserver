@@ -28,9 +28,11 @@ app = Flask(__name__)
 db = hh_db.db
 # # location of sql db, e.g. mysql://mydb.db
 db_uri = None
+args = None
+
 
 def _main():
-    global app, db, db_uri
+    global app, db, db_uri, args
     args = parser.parse_args()
     ## XXX TODO: do stuff with configs files, etc....
     if args.database:
@@ -53,22 +55,33 @@ def _main():
     # # finally initialize the db from hh_db
     db.init_app(app)
 
+
 @app.route('/', methods=['GET'])
 def index():
     return render_template('woops.html')
 
+
 @app.route('/debug', methods=['GET', 'POST'])
 def debug_page():
-    args = request.args
-    return render_template('debug.html')
+    if args.database:
+        dbloc = args.database
+    else:
+        dbloc = '<<NONE>>'
+    return render_template('debug.html',
+                           dbloc=args.database,
+                           reqargs=request.args.to_dict(),
+                           )
 
-@app.route('/search', methods=['GET', 'POST']):
+
+@app.route('/search', methods=['GET', 'POST'])
 def search_page():
     return render_template('woops.html')
+
 
 @app.route('/org', methods=['GET'])
 def org_page():
     return render_template('woops.html')
+
 
 @app.route('/login',)
 def login_page():
