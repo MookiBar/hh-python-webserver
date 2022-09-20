@@ -1,8 +1,12 @@
 ## to create a python virtual environment here: virtualenv .
 ## to activate it (from bash): source bin/activate
 ## to then install the packages into it: pip3 install flask flask_sqlalchemy
+#
+# ignore virtualenv-related files/folders
 /bin/
 /env/
 /lib/
 /pyvenv.cfg
 /include/
+# ignore pycharm folder
+/.idea/
