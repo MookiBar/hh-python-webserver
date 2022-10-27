@@ -8,11 +8,11 @@ import hh_db
 
 DEFAULT_CONFIG = 'hh.cfg'
 SETTINGS = {
-    'db_username': 'XXX',
-    'db_password': 'XXX',
-    'db_host': 'XXX',
-    'db_port': '12345',
-    'db_name': 'XXX',
+    'db_username': 'admin',
+    'db_password': 'password123',
+    'db_host': '127.0.0.1',
+    'db_port': 3306,
+    'db_name': 'HH',
 }
 
 
@@ -24,10 +24,7 @@ parser.add_argument('--database', metavar='FILE',
 
 # # initialize the Flask runtime
 app = Flask(__name__)
-# # borrow the uninitialized db obj from hh_db
-db = hh_db.db
-# # location of sql db, e.g. mysql://mydb.db
-db_uri = None
+
 args = None
 
 
@@ -36,29 +33,41 @@ def _main():
     args = parser.parse_args()
     ## XXX TODO: do stuff with configs files, etc....
     if args.database:
+        raise Exception('not yet supported (error 2752)')
         # # use custom database filename from command line arg
-        db_uri = 'mysql://%s' % args.database
-        if not os.path.exists(args.database):
-            #hh_db.create_fake_database(args.database)
-            raise Exception('file does not exist: %s' % args.database)
+        #db_uri = 'mysql://%s' % args.database
+        #if not os.path.exists(args.database):
+        #    #hh_db.create_fake_database(args.database)
+        #    raise Exception('file does not exist: %s' % args.database)
     else:
         # # use database URI derived from settings
-        db_uri = 'mysql://{username}:{password}@{host}:{port}/{name}'.format(
-            username=SETTINGS['db_username'],
+        hh_db.initiate_mysql_engine(
+            user=SETTINGS['db_username'],
             password=SETTINGS['db_password'],
-            host=SETTINGS['db_host'],
-            name=SETTINGS['db_name'],
+            hostname=SETTINGS['db_host'],
+            dbname=SETTINGS['db_name'],
         )
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.Model.metadata.reflect(db.engine)
-    # # finally initialize the db from hh_db
-    db.init_app(app)
+    app.run()
 
 
 @app.route('/', methods=['GET'])
-def index():
-    return render_template('woops.html')
+def page_index():
+    return render_template('public/index.html')
+
+
+@app.route('/risk_select', methods=['GET'])
+def page_risk_select():
+    return render_template('public/XXX.html')
+
+
+@app.route('/volunteer_select', methods=['GET'])
+def page_volunteer_select():
+    return render_template('public/XXX.html')
+
+
+@app.route('/org_rep', methods=['GET'])
+def page_org_rep():
+    return render_template('public/XXX.html')
 
 
 @app.route('/debug', methods=['GET', 'POST'])
