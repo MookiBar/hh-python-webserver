@@ -108,6 +108,7 @@ class Forum(Base):
     PostID = Column(Integer, primary_key=True)
     TimeStamp = Column(DateTime, nullable=False)
     Comment = Column(String(length=200), nullable=False)
+    UserID = Column(Integer, ForeignKey("USER.UserID"), nullable=False)
     PageID = Column(Integer, ForeignKey("PAGE.PageID"), nullable=False)
    
     def __init__(self, PostID):
@@ -134,7 +135,7 @@ class Usage_Metrics(Base):
     PageID = Column(Integer, ForeignKey("PAGE.PageID"), nullable=False) 
     AvgTimeSpent = Column(Float(precision=10), nullable=False)
     NumVisits = Column(Integer, nullable=False)
-    NumForums = Column(Integer, nullable=False)
+    NumForumPosts = Column(Integer, nullable=False)
     NumUpVotes = Column(Integer, nullable=False)
     NumDownVotes = Column(Integer, nullable=False)
    
