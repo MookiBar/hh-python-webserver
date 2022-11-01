@@ -80,15 +80,15 @@ class Organization(Base):
     __tablename__ = 'ORGANIZATION'
     OrganizationID = Column(Integer, primary_key=True)
     Name = Column(String(length=50), nullable=False)
-    HQAdress = Column(String(length=100))
+    HQAddress = Column(String(length=100))
     PhoneNumber = Column(String(length=12))
     Hours = Column(String(length=200))
    
-    def __init__(self, OrganizationID, Name):
+    def __init__(self, Name, HQAddress, PhoneNumber, Hours):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
-        self.HQAdress = HQAdress
+        self.HQAddress = HQAddress
         self.PhoneNumber = PhoneNumber
         self.Hours = Hours
  
@@ -102,11 +102,11 @@ class Representative(Base):
     OrganizationID = Column(Integer, ForeignKey("ORGANIZATION.OrganizationID"), primary_key=True)
     VerificationStatus = Column(Boolean, default=False, nullable=False)
    
-    def __init__(self, UserID, OrganizationID):
+    def __init__(self, UserID, OrganizationID, VerificationStatus):
         ## add all required/cannot-be-empty params
-        ## primary_key *should* auto-increment on create by default
         self.UserID = UserID
         self.OrganizationID = OrganizationID
+        self.VerificationStatus = VerificationStatus
 
     def __repr__(self):
         return "%s %s" %(self.UserID, self.OrganizationID) 
@@ -117,9 +117,8 @@ class Program(Base):
     Name = Column(String(length=50), nullable=False)
     Description = Column(String(length=200))
    
-    def __init__(self, ProgramID, Name):
+    def __init__(self, Name, Description):
         ## add all required/cannot-be-empty params
-
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
         self.Description = Description
@@ -136,7 +135,7 @@ class Locality(Base):
     PhoneNumber = Column(String(length=12), nullable=False)
     Hours = Column(String(length=200))
    
-    def __init__(self, LocalityID):
+    def __init__(self, OrganizationID, ProgramID, Address, PhoneNumber, Hours):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.OrganizationID = OrganizationID
@@ -148,23 +147,29 @@ class Locality(Base):
     def __repr__(self):
         return "%s" %(self.LocalityID) 
 
-class Page(Base):
-    __tablename__ = 'PAGE'
+class Resource_Page(Base):
+    __tablename__ = 'RESOURCE_PAGE'
     PageID = Column(Integer, primary_key=True)
     OrganizationID = Column(Integer, ForeignKey("ORGANIZATION.OrganizationID"))
     ProgramID = Column(Integer, ForeignKey("PROGRAM.ProgramID"))
     LocalityID = Column(Integer, ForeignKey("LOCALITY.LocalityID")) 
-    AcceptsWho = Column(String(length=100))
+    AcceptsWho = Column(String(length=300)) #talk to Wes, may scrap
+    AcceptingVolunteers = Column(Boolean)
+    VolunteerSeekerNotice = Column(String(length=1000))
+    HelpSeekerNotice = Column(String(length=1000))
     ProvidesTransportation = Column(Boolean)
     LastUpdate = Column(DateTime)
    
-    def __init__(self, PageID):
+    def __init__(self, OrganizationID, ProgramID, LocalityID, AcceptsWho, AcceptingVolunteers, VolunteerSeekerNotice, HelpSeekerNotice, ProvidesTransportation, LastUpdate):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.OrganizationID = OrganizationID
         self.ProgramID = ProgramID
         self.LocalityID = LocalityID
         self.AcceptsWho = AcceptsWho
+        self.AcceptingVolunteers = AcceptingVolunteers
+        self.VolunteerSeekerNotice = VolunteerSeekerNotice
+        self.HelpSeekerNotice = HelpSeekerNotice
         self.ProvidesTransportation = ProvidesTransportation
         self.LastUpdate = LastUpdate
  
@@ -179,7 +184,7 @@ class Forum(Base):
     UserID = Column(Integer, ForeignKey("USER.UserID"), nullable=False)
     PageID = Column(Integer, ForeignKey("PAGE.PageID"), nullable=False)
    
-    def __init__(self, PostID):
+    def __init__(self, TimeStamp, Comment, UserID, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.TimeStamp = TimeStamp
@@ -196,7 +201,7 @@ class Vote(Base):
     Vote = Column(Boolean, nullable=False)
     PageID = Column(Integer, ForeignKey("PAGE.PageID"), nullable=False)
    
-    def __init__(self, VoteID):
+    def __init__(self, Vote, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Vote = Vote
@@ -215,7 +220,7 @@ class Usage_Metrics(Base):
     NumUpVotes = Column(Integer, nullable=False)
     NumDownVotes = Column(Integer, nullable=False)
    
-    def __init__(self, MetricID):
+    def __init__(self, PageID, AvgTimeSpent, NumVisits, NumForumPosts, NumUpVotes, NumDownVotes):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.PageID = PageID
