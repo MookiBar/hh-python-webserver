@@ -17,7 +17,7 @@ SETTINGS = {
 
 
 parser = argparse.ArgumentParser(description='HTML Flask application for HelpingHands')
-parser.add_argument('-c','--config', metavar='FILE',
+parser.add_argument('-c', '--config', metavar='FILE',
                     type=str, help='add a non-default filename for the config')
 parser.add_argument('--database', metavar='FILE',
                     type=str, help='use a non-default location for the database')
@@ -57,21 +57,27 @@ def page_index():
 
 @app.route('/risk_select', methods=['GET'])
 def page_risk_select():
-    return render_template('public/XXX.html')
+    print(repr(request.args.to_dict()))
+    return render_template('public/content/risk_select.html')
 
 
 @app.route('/volunteer_select', methods=['GET'])
 def page_volunteer_select():
-    return render_template('public/XXX.html')
+    return render_template('public/content/volunteer_select.html')
 
 
 @app.route('/org_rep', methods=['GET'])
 def page_org_rep():
-    return render_template('public/XXX.html')
+    return render_template('public/content/org_rep.html')
+
+
+@app.route('/about', methods=['GET'])
+def page_about_us():
+    return render_template('public/about.html')
 
 
 @app.route('/debug', methods=['GET', 'POST'])
-def debug_page():
+def page_debug():
     if args.database:
         dbloc = args.database
     else:
