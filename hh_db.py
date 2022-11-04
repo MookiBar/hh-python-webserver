@@ -323,10 +323,10 @@ class Service(Base):
     Addiction = Column(Boolean, default=False, nullable=False)
     Counseling = Column(Boolean, default=False, nullable=False)
     Legal = Column(Boolean, default=False, nullable=False)
-    Veterans = Column(Boolean, default=False, nullable=False)
+    Veteran = Column(Boolean, default=False, nullable=False)
     Family = Column(Boolean, default=False, nullable=False)
 
-    def __init__(self, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veterans, Family):
+    def __init__(self, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Food = Food
@@ -337,7 +337,7 @@ class Service(Base):
         self.Addiction = Addiction
         self.Counseling = Counseling
         self.Legal = Legal
-        self.Veterans = Veterans
+        self.Veteran = Veteran
         self.Family = Family
 
     def __repr__(self):
