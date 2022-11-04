@@ -99,9 +99,19 @@ class Organization(Base):
     AcceptingVolunteers = Column(Boolean) 
     VolunteerNotice = Column(String(length=1000)) 
     HelpSeekerNotice = Column(String(length=1000)) 
+    Food = Column(Boolean, default=False, nullable=False)
+    Shelter = Column(Boolean, default=False, nullable=False)
+    Medicine = Column(Boolean, default=False, nullable=False)
+    Clothing = Column(Boolean, default=False, nullable=False)
+    Supplies = Column(Boolean, default=False, nullable=False)
+    Addiction = Column(Boolean, default=False, nullable=False)
+    Counseling = Column(Boolean, default=False, nullable=False)
+    Legal = Column(Boolean, default=False, nullable=False)
+    Veteran = Column(Boolean, default=False, nullable=False)
+    Family = Column(Boolean, default=False, nullable=False)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=False) 
    
-    def __init__(self, Name, HQAddress, PhoneNumber, Hours, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, PageID):
+    def __init__(self, Name, HQAddress, PhoneNumber, Hours, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
@@ -111,6 +121,16 @@ class Organization(Base):
         self.AcceptingVolunteers = AcceptingVolunteers
         self.VolunteerNotice = VolunteerNotice
         self.HelpSeekerNotice = HelpSeekerNotice
+        self.Food = Food
+        self.Shelter = Shelter
+        self.Medicine = Medicine
+        self.Clothing = Clothing
+        self.Supplies = Supplies
+        self.Addiction = Addiction
+        self.Counseling = Counseling
+        self.Legal = Legal
+        self.Veteran = Veteran
+        self.Family = Family
         self.PageID = PageID
  
 
@@ -125,9 +145,19 @@ class Program(Base):
     AcceptingVolunteers = Column(Boolean) 
     VolunteerNotice = Column(String(length=1000)) 
     HelpSeekerNotice = Column(String(length=1000)) 
+    Food = Column(Boolean, default=False, nullable=False)
+    Shelter = Column(Boolean, default=False, nullable=False)
+    Medicine = Column(Boolean, default=False, nullable=False)
+    Clothing = Column(Boolean, default=False, nullable=False)
+    Supplies = Column(Boolean, default=False, nullable=False)
+    Addiction = Column(Boolean, default=False, nullable=False)
+    Counseling = Column(Boolean, default=False, nullable=False)
+    Legal = Column(Boolean, default=False, nullable=False)
+    Veteran = Column(Boolean, default=False, nullable=False)
+    Family = Column(Boolean, default=False, nullable=False)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=False) 
    
-    def __init__(self, Name, Description, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, PageID):
+    def __init__(self, Name, Description, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
@@ -135,6 +165,16 @@ class Program(Base):
         self.AcceptingVolunteers = AcceptingVolunteers
         self.VolunteerNotice = VolunteerNotice
         self.HelpSeekerNotice = HelpSeekerNotice
+        self.Food = Food
+        self.Shelter = Shelter
+        self.Medicine = Medicine
+        self.Clothing = Clothing
+        self.Supplies = Supplies
+        self.Addiction = Addiction
+        self.Counseling = Counseling
+        self.Legal = Legal
+        self.Veteran = Veteran
+        self.Family = Family
         self.PageID = PageID
 
     def __repr__(self):
@@ -155,9 +195,19 @@ class Locality(Base):
     VolunteerNotice = Column(String(length=1000)) 
     HelpSeekerNotice = Column(String(length=1000)) 
     ProvidesTransportation = Column(Boolean) 
+    Food = Column(Boolean, default=False, nullable=False)
+    Shelter = Column(Boolean, default=False, nullable=False)
+    Medicine = Column(Boolean, default=False, nullable=False)
+    Clothing = Column(Boolean, default=False, nullable=False)
+    Supplies = Column(Boolean, default=False, nullable=False)
+    Addiction = Column(Boolean, default=False, nullable=False)
+    Counseling = Column(Boolean, default=False, nullable=False)
+    Legal = Column(Boolean, default=False, nullable=False)
+    Veteran = Column(Boolean, default=False, nullable=False)
+    Family = Column(Boolean, default=False, nullable=False)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=False) 
    
-    def __init__(self, Name, OrganizationID, ProgramID, Address, Latitude, Longitude, PhoneNumber, Hours, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, ProvidesTransportation, PageID):
+    def __init__(self, Name, OrganizationID, ProgramID, Address, Latitude, Longitude, PhoneNumber, Hours, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, ProvidesTransportation, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
@@ -172,6 +222,16 @@ class Locality(Base):
         self.VolunteerNotice = VolunteerNotice
         self.HelpSeekerNotice = HelpSeekerNotice
         self.ProvidesTransportation = ProvidesTransportation
+        self.Food = Food
+        self.Shelter = Shelter
+        self.Medicine = Medicine
+        self.Clothing = Clothing
+        self.Supplies = Supplies
+        self.Addiction = Addiction
+        self.Counseling = Counseling
+        self.Legal = Legal
+        self.Veteran = Veteran
+        self.Family = Family
         self.PageID = PageID
  
     def __repr__(self):
@@ -311,73 +371,3 @@ class Usage_Metrics(Base):
      
     def __repr__(self):
         return "%s" %(self.MetricID) 
-
-class Service(Base):
-    __tablename__ = 'SERVICE'
-    ServiceID = Column(Integer, primary_key=True)
-    Food = Column(Boolean, default=False, nullable=False)
-    Shelter = Column(Boolean, default=False, nullable=False)
-    Medicine = Column(Boolean, default=False, nullable=False)
-    Clothing = Column(Boolean, default=False, nullable=False)
-    Supplies = Column(Boolean, default=False, nullable=False)
-    Addiction = Column(Boolean, default=False, nullable=False)
-    Counseling = Column(Boolean, default=False, nullable=False)
-    Legal = Column(Boolean, default=False, nullable=False)
-    Veteran = Column(Boolean, default=False, nullable=False)
-    Family = Column(Boolean, default=False, nullable=False)
-
-    def __init__(self, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family):
-        ## add all required/cannot-be-empty params
-        ## primary_key *should* auto-increment on create by default
-        self.Food = Food
-        self.Shelter = Shelter
-        self.Medicine = Medicine
-        self.Clothing = Clothing
-        self.Supplies = Supplies
-        self.Addiction = Addiction
-        self.Counseling = Counseling
-        self.Legal = Legal
-        self.Veteran = Veteran
-        self.Family = Family
-
-    def __repr__(self):
-        return "%s" %(self.ServiceID) 
-
-class Org_Service_Link(Base):
-    __tablename__ = 'ORG_SERVICE_LINK'
-    LinkID = Column(Integer, primary_key=True)
-    OrganizationID = Column(Integer, ForeignKey("ORGANIZATION.OrganizationID"))
-    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"))
-
-    def __init__(self, OrganizationID, ServiceID):
-        self.OrganizationID = OrganizationID
-        self.ServiceID = ServiceID
-    
-    def __repr__(self):
-        return "%s %s %s" %(self.LinkID, self.OrganizationID, self.ServiceID) 
-
-class Loc_Service_Link(Base):
-    __tablename__ = 'LOC_SERVICE_LINK'
-    LinkID = Column(Integer, primary_key=True)
-    LocalityID = Column(Integer, ForeignKey("LOCALITY.LocalityID"))
-    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"))
-
-    def __init__(self, LocalityID, ServiceID):
-        self.LocalityID = LocalityID
-        self.ServiceID = ServiceID
-    
-    def __repr__(self):
-        return "%s %s %s" %(self.LinkID, self.LocalityID, self.ServiceID) 
-
-class Prog_Service_Link(Base):
-    __tablename__ = 'PROG_SERVICE_LINK'
-    LinkID = Column(Integer, primary_key=True)
-    ProgramID = Column(Integer, ForeignKey("PROGRAM.ProgramID"))
-    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"))
-
-    def __init__(self, ProgramID, ServiceID):
-        self.ProgramID = ProgramID
-        self.ServiceID = ServiceID
-    
-    def __repr__(self):
-        return "%s %s %s" %(self.LinkID, self.ProgramID, self.ServiceID) 
