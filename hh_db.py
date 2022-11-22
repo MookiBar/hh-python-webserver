@@ -1,6 +1,6 @@
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, Float, Numeric
+from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, Float, Numeric, inspect
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import sessionmaker
 
@@ -41,10 +41,40 @@ def add_db_object(obj):
     add one filled-in db-model object at a time to the database
 
     example:  hh_db.add_db_object( hh_db.User(*user_args) )
+
+    returns: primary key of committed object (None if fail)
     """
     with Session.begin() as session:
         session.add(obj)
         session.commit()
+    pkey_str = inspect(type(obj)).primary_key[0].name
+    with Session.begin() as session:
+        session.add(obj)
+        pkey_val = getattr(obj, pkey_str)
+    return pkey_val
+
+
+
+def hash_password(password):
+    ## md5(hex)=32 bytes, match length of User.password
+    ## TODO: change to better hashing algo if size increases
+    return hashlib.md5(password).hexdigest()
+
+
+def check_username_password(username, password):
+    tmphash = hash_password(password)
+    with Session.begin() as session:
+        q = session.query(User).filter_by(Email=username)
+        if q.count():
+            if q.count() > 1:
+                ## there should not be multiple! woops!
+                raise Exception('username not unique: %s' % username)
+            user = q.first()
+            if user.Email == username and user.Password == tmphash:
+                return user.UserID
+    ## made it this far? your login failed
+    return None
+
 
 
 # Declarative mapping configurations
