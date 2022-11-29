@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, Float, Numeric, inspect
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import sessionmaker
+import hashlib
 
 Base = declarative_base()
 Session = None
