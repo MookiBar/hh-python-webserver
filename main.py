@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, session
 #from flask_sqlalchemy import SQLAlchemy
 import argparse
 import os
@@ -100,7 +100,20 @@ def org_page():
 
 @app.route('/login',)
 def login_page():
-    return render_template('woops.html')
+    if session['logged_in']:
+        ## TODO: something? user trying to log in when already logged in
+        return
+    ## TODO: match these to the html template form vars...
+    username=request.get('username')
+    password=request.get('password')
+    if username and password:
+        uid = hh_db.check_username_password(username, password)
+        if uid:
+            session['logged_in'] = True
+            session['user'] = uid
+            ### TODO: a template to display logged in
+            return 'loggged in'
+    return render_template('public/login.html')
 
 
 if __name__ == '__main__':
