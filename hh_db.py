@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, Float, Numeric, inspect
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import sessionmaker
+import hashlib
 
 Base = declarative_base()
 Session = None
@@ -58,6 +59,8 @@ def add_db_object(obj):
 def hash_password(password):
     ## md5(hex)=32 bytes, match length of User.password
     ## TODO: change to better hashing algo if size increases
+    if hasattr(password, 'encode'):
+        password = password.encode('utf-8')
     return hashlib.md5(password).hexdigest()
 
 
@@ -517,52 +520,3 @@ class Usage_Metrics(Base):
 
     def __repr__(self):
         return "%s" %(self.MetricID)
-
-class Service(Base):
-    __tablename__ = 'SERVICE'
-    ServiceID = Column(Integer, primary_key=True)
-    Type = Column(String(length=20), nullable=False)
-
-    def __init__(self, Type):
-        ## add all required/cannot-be-empty params
-        ## primary_key *should* auto-increment on create by default
-        self.Type = Type
-
-    def __repr__(self):
-        return "%s %s" %(self.ServiceID, self.Type)
-
-class Org_Service_Link(Base):
-    __tablename__ = 'ORG_SERVICE_LINK'
-    OrganizationID = Column(Integer, ForeignKey("ORGANIZATION.OrganizationID"), primary_key=True)
-    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"), primary_key=True)
-
-    def __init__(self, OrganizationID, ServiceID):
-        self.OrganizationID = OrganizationID
-        self.ServiceID = ServiceID
-
-    def __repr__(self):
-        return "%s %s" %(self.OrganizationID, self.ServiceID)
-
-class Loc_Service_Link(Base):
-    __tablename__ = 'LOC_SERVICE_LINK'
-    LocalityID = Column(Integer, ForeignKey("LOCALITY.LocalityID"), primary_key=True)
-    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"), primary_key=True)
-
-    def __init__(self, LocalityID, ServiceID):
-        self.LocalityID = LocalityID
-        self.ServiceID = ServiceID
-
-    def __repr__(self):
-        return "%s %s" %(self.LocalityID, self.ServiceID)
-
-class Prog_Service_Link(Base):
-    __tablename__ = 'PROG_SERVICE_LINK'
-    ProgramID = Column(Integer, ForeignKey("PROGRAM.ProgramID"), primary_key=True)
-    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"), primary_key=True)
-
-    def __init__(self, ProgramID, ServiceID):
-        self.ProgramID = ProgramID
-        self.ServiceID = ServiceID
-
-    def __repr__(self):
-        return "%s %s" %(self.ProgramID, self.ServiceID)
