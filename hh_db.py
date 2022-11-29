@@ -489,13 +489,16 @@ class Usage_Metrics(Base):
 
     *all attributes required
 
-    example: hh_db.add_db_object( hh_db.Usage_Metrics(1, 5.65, 10, 2, 5, 3, 4, 5, 3, 1) )
+    example: hh_db.add_db_object( hh_db.Usage_Metrics(1, 5.65, 10, 10, 10, 10, 2, 5, 3, 4, 5, 3, 1) )
     """
     __tablename__ = 'USAGE_METRICS'
     MetricID = Column(Integer, primary_key=True)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=False)
     AvgTimeSpent = Column(Float(precision=10), nullable=False)
-    NumVisits = Column(Integer, nullable=False)
+    NumVisitsAtRisk = Column(Integer, nullable=False)
+    NumVisitsVolunteer = Column(Integer, nullable=False)
+    NumVisitsRepresentative = Column(Integer, nullable=False)
+    NumVisitsOther = Column(Integer, nullable=False)
     NumForumPosts = Column(Integer, nullable=False)
     NumUpVotesClean = Column(Integer, nullable=False)
     NumDownVotesClean = Column(Integer, nullable=False)
@@ -504,12 +507,15 @@ class Usage_Metrics(Base):
     NumUpVotesSafe = Column(Integer, nullable=False)
     NumDownVotesSafe = Column(Integer, nullable=False)
 
-    def __init__(self, PageID, AvgTimeSpent, NumVisits, NumForumPosts, NumUpVotesClean, NumDownVotesClean, NumUpVotesResponsive, NumDownVotesResponsive, NumUpVotesSafe, NumDownVotesSafe):
+    def __init__(self, PageID, AvgTimeSpent, NumVisitsAtRisk, NumVisitsVolunteer, NumVisitsRepresentative, NumVisitsOther, NumForumPosts, NumUpVotesClean, NumDownVotesClean, NumUpVotesResponsive, NumDownVotesResponsive, NumUpVotesSafe, NumDownVotesSafe):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.PageID = PageID
         self.AvgTimeSpent = AvgTimeSpent
-        self.NumVisits = NumVisits
+        self.NumVisitsAtRisk = NumVisitsAtRisk
+        self.NumVisitsVolunteer = NumVisitsVolunteer
+        self.NumVisitsRepresentative = NumVisitsRepresentative
+        self.NumVisitsOther = NumVisitsOther
         self.NumForumPosts = NumForumPosts
         self.NumUpVotesClean = NumUpVotesClean
         self.NumDownVotesClean = NumDownVotesClean
