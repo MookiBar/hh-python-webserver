@@ -106,7 +106,7 @@ class User(Base):
         self.LastName = LastName
         self.Email = Email
         self.PhoneNumber = PhoneNumber
-        self.Password = Password
+        self.Password = hash_password(Password)
         self.IsAtRisk = IsAtRisk
         self.IsVolunteer = IsVolunteer
         self.IsRepresentative = IsRepresentative
