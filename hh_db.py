@@ -59,6 +59,8 @@ def add_db_object(obj):
 def hash_password(password):
     ## md5(hex)=32 bytes, match length of User.password
     ## TODO: change to better hashing algo if size increases
+    if hasattr(password, 'encode'):
+        password = password.encode('utf-8')
     return hashlib.md5(password).hexdigest()
 
 
