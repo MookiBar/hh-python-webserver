@@ -8,7 +8,7 @@ import hh_db
 
 DEFAULT_CONFIG = 'hh.cfg'
 SETTINGS = {
-    'db_username': 'admin',
+    'db_username': 'root',
     'db_password': 'password123',
     'db_host': '127.0.0.1',
     'db_port': 3306,
@@ -41,10 +41,10 @@ def _main():
         #    raise Exception('file does not exist: %s' % args.database)
     else:
         # # use database URI derived from settings
-        hh_db.initiate_mysql_engine(
+        hh_db.initiate_db(
             user=SETTINGS['db_username'],
             password=SETTINGS['db_password'],
-            hostname=SETTINGS['db_host'],
+            host=SETTINGS['db_host'],
             dbname=SETTINGS['db_name'],
         )
     app.run()
@@ -57,18 +57,29 @@ def page_index():
 
 @app.route('/risk_select', methods=['GET'])
 def page_risk_select():
-    print(repr(request.args.to_dict()))
-    return render_template('public/content/risk_select.html')
+    print('risk_select')
+    request_dict = request.args.to_dict()
+    if request_dict:
+        ## XXX TODO: actual checks...
+        request_dict['atrisk'] = 'on'
+        return redirect(url_for('search_results_page', **request_dict))
+    return render_template('public/risk_select.html', selectList=[(x,x) for x in hh_db.Services])
 
 
 @app.route('/volunteer_select', methods=['GET'])
 def page_volunteer_select():
-    return render_template('public/content/volunteer_select.html')
+    print('volunteer_select')
+    request_dict = request.args.to_dict()
+    if request_dict:
+        ## XXX TODO: actual checks...
+        request_dict['volunteer'] = 'on'
+        return redirect(url_for('search_results_page', **request_dict))
+    return render_template('public/volunteer_select.html', selectList=[(x,x) for x in hh_db.Services])
 
 
 @app.route('/org_rep', methods=['GET'])
 def page_org_rep():
-    return render_template('public/content/org_rep.html')
+    return render_template('public/org_rep.html')
 
 
 @app.route('/about', methods=['GET'])
@@ -88,14 +99,35 @@ def page_debug():
                            )
 
 
-@app.route('/search', methods=['GET', 'POST'])
-def search_page():
-    return render_template('woops.html')
+@app.route('/search_results', methods=['GET', 'POST'])
+def search_results_page():
+    print('search_results')
+    print(request.args.to_dict())
+    srvcs = []
+    for i in hh_db.Services:
+        if request.args.get(i):
+            srvcs.append(i)
+    localities = hh_db.match_all_localities(srvcs)
+    organizations = hh_db.match_all_organizations(srvcs)
+    programs = hh_db.match_all_programs(srvcs)
+    return render_template('public/search_results.html', 
+            localities=localities, 
+            organizations=organizations, 
+            programs=programs,
+            services=hh_db.Services,
+            )
 
 
 @app.route('/org', methods=['GET'])
 def org_page():
-    return render_template('woops.html')
+    request_dict = request.args.to_dict()
+    orgid = request.args.get('orgid')
+    orgid = 1
+    with hh_db.Session.begin() as session:
+        q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid)
+    org = q.first()
+    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)]
+    return render_template('public/org_resource_page.html', org=org, forumposts=forumposts)
 
 
 @app.route('/login',)
