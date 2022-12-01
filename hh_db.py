@@ -1,6 +1,6 @@
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, Float, Numeric, inspect
+from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, Float, Numeric, inspect, or_
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import sessionmaker
 import hashlib
@@ -8,6 +8,8 @@ import hashlib
 Base = declarative_base()
 Session = None
 
+## This should match (exact spelling and case) the booleans for org/loc/prog serices
+Services = ('Food', 'Shelter', 'Medicine', 'Clothing', 'Supplies', 'Addiction', 'Counseling', 'Legal', 'Veteran', 'Family')
 
 def initiate_db(user, password, host='127.0.0.1', port=3306, dbname='HH'):
     """
@@ -54,6 +56,29 @@ def add_db_object(obj):
         pkey_val = getattr(obj, pkey_str)
     return pkey_val
 
+
+def match_all_localities(services):
+    locsrvcs = [ getattr(Locality, x) for x in services]
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(Locality).filter(or_(*locsrvcs)).all()
+
+    return q
+
+def match_all_organizations(services):
+    orgsrvcs = [ getattr(Organization, x) for x in services]
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(Organization).filter(or_(*orgsrvcs)).all()
+    return q
+
+
+def match_all_programs(services):
+    progsrvcs = [ getattr(Program, x) for x in services]
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(Program).filter(or_(*progsrvcs)).all()
+    return q
 
 
 def hash_password(password):
@@ -489,40 +514,75 @@ class Usage_Metrics(Base):
 
     *all attributes required
 
-    example: hh_db.add_db_object( hh_db.Usage_Metrics(1, 5.65, 10, 10, 10, 10, 2, 5, 3, 4, 5, 3, 1) )
+    example: hh_db.add_db_object( hh_db.Usage_Metrics(1, 5.65, 10, 2, 5, 3) )
     """
     __tablename__ = 'USAGE_METRICS'
     MetricID = Column(Integer, primary_key=True)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=False)
     AvgTimeSpent = Column(Float(precision=10), nullable=False)
-    NumVisitsAtRisk = Column(Integer, nullable=False)
-    NumVisitsVolunteer = Column(Integer, nullable=False)
-    NumVisitsRepresentative = Column(Integer, nullable=False)
-    NumVisitsOther = Column(Integer, nullable=False)
+    NumVisits = Column(Integer, nullable=False)
     NumForumPosts = Column(Integer, nullable=False)
-    NumUpVotesClean = Column(Integer, nullable=False)
-    NumDownVotesClean = Column(Integer, nullable=False)
-    NumUpVotesResponsive = Column(Integer, nullable=False)
-    NumDownVotesResponsive = Column(Integer, nullable=False)
-    NumUpVotesSafe = Column(Integer, nullable=False)
-    NumDownVotesSafe = Column(Integer, nullable=False)
+    NumUpVotes = Column(Integer, nullable=False)
+    NumDownVotes = Column(Integer, nullable=False)
 
-    def __init__(self, PageID, AvgTimeSpent, NumVisitsAtRisk, NumVisitsVolunteer, NumVisitsRepresentative, NumVisitsOther, NumForumPosts, NumUpVotesClean, NumDownVotesClean, NumUpVotesResponsive, NumDownVotesResponsive, NumUpVotesSafe, NumDownVotesSafe):
+    def __init__(self, PageID, AvgTimeSpent, NumVisits, NumForumPosts, NumUpVotes, NumDownVotes):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.PageID = PageID
         self.AvgTimeSpent = AvgTimeSpent
-        self.NumVisitsAtRisk = NumVisitsAtRisk
-        self.NumVisitsVolunteer = NumVisitsVolunteer
-        self.NumVisitsRepresentative = NumVisitsRepresentative
-        self.NumVisitsOther = NumVisitsOther
+        self.NumVisits = NumVisits
         self.NumForumPosts = NumForumPosts
-        self.NumUpVotesClean = NumUpVotesClean
-        self.NumDownVotesClean = NumDownVotesClean
-        self.NumUpVotesResponsive = NumUpVotesResponsive
-        self.NumDownVotesResponsive = NumDownVotesResponsive
-        self.NumUpVotesSafe = NumUpVotesSafe
-        self.NumDownVotesSafe = NumDownVotesSafe
+        self.NumUpVotes = NumUpVotes
+        self.NumDownVotes = NumDownVotes
 
     def __repr__(self):
         return "%s" %(self.MetricID)
+
+class Service(Base):
+    __tablename__ = 'SERVICE'
+    ServiceID = Column(Integer, primary_key=True)
+    Type = Column(String(length=20), nullable=False)
+
+    def __init__(self, Type):
+        ## add all required/cannot-be-empty params
+        ## primary_key *should* auto-increment on create by default
+        self.Type = Type
+
+    def __repr__(self):
+        return "%s %s" %(self.ServiceID, self.Type)
+
+class Org_Service_Link(Base):
+    __tablename__ = 'ORG_SERVICE_LINK'
+    OrganizationID = Column(Integer, ForeignKey("ORGANIZATION.OrganizationID"), primary_key=True)
+    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"), primary_key=True)
+
+    def __init__(self, OrganizationID, ServiceID):
+        self.OrganizationID = OrganizationID
+        self.ServiceID = ServiceID
+
+    def __repr__(self):
+        return "%s %s" %(self.OrganizationID, self.ServiceID)
+
+class Loc_Service_Link(Base):
+    __tablename__ = 'LOC_SERVICE_LINK'
+    LocalityID = Column(Integer, ForeignKey("LOCALITY.LocalityID"), primary_key=True)
+    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"), primary_key=True)
+
+    def __init__(self, LocalityID, ServiceID):
+        self.LocalityID = LocalityID
+        self.ServiceID = ServiceID
+
+    def __repr__(self):
+        return "%s %s" %(self.LocalityID, self.ServiceID)
+
+class Prog_Service_Link(Base):
+    __tablename__ = 'PROG_SERVICE_LINK'
+    ProgramID = Column(Integer, ForeignKey("PROGRAM.ProgramID"), primary_key=True)
+    ServiceID = Column(Integer, ForeignKey("SERVICE.ServiceID"), primary_key=True)
+
+    def __init__(self, ProgramID, ServiceID):
+        self.ProgramID = ProgramID
+        self.ServiceID = ServiceID
+
+    def __repr__(self):
+        return "%s %s" %(self.ProgramID, self.ServiceID)
