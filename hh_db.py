@@ -58,6 +58,14 @@ def add_db_object(obj):
 
 
 def match_all_localities(services):
+    """
+    turn a list of services strings into a list of matching localities
+
+    example:  hh_db.match_all_localities( ('Food','Medicine') )
+
+    returns: list of Locality objects
+
+    """
     locsrvcs = [ getattr(Locality, x) for x in services]
     with Session.begin() as session:
         session.expire_on_commit = False
@@ -66,6 +74,15 @@ def match_all_localities(services):
     return q
 
 def match_all_organizations(services):
+    """
+    turn a list of services strings into a list of matching organizations
+
+    example:  hh_db.match_al_organizations( ('Food','Medicine') )
+
+    returns: list of Organization objects
+
+
+    """
     orgsrvcs = [ getattr(Organization, x) for x in services]
     with Session.begin() as session:
         session.expire_on_commit = False
@@ -74,6 +91,14 @@ def match_all_organizations(services):
 
 
 def match_all_programs(services):
+    """
+    turn a list of services strings into a list of matching programs
+
+    example:  hh_db.match_all_program( ('Food','Medicine') )
+
+    returns: list of Program objects
+
+    """
     progsrvcs = [ getattr(Program, x) for x in services]
     with Session.begin() as session:
         session.expire_on_commit = False
