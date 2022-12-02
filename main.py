@@ -162,7 +162,7 @@ def org_page():
         q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid)
     org = q.first()
     forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
-    return render_template('public/org_resource_page.html', org=org, forumposts=forumposts)
+    return render_template('public/org_resource_page.html', org=org, services=hh_db.Services, forumposts=forumposts)
 
 
 @app.route('/prog', methods=['GET'])
@@ -173,7 +173,7 @@ def prog_page():
         q = session.query(hh_db.Program).filter_by(ProgramID=progid)
     prog = q.first()
     forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
-    return render_template('public/prog_resource_page.html', prog=prog, forumposts=forumposts)
+    return render_template('public/prog_resource_page.html', prog=prog, services=hh_db.Services, forumposts=forumposts)
 
 
 @app.route('/loc', methods=['GET'])
@@ -184,7 +184,7 @@ def loc_page():
         q = session.query(hh_db.Locality).filter_by(LocalityID=locid)
     loc = q.first()
     forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
-    return render_template('public/loc_resource_page.html', loc=loc, forumposts=forumposts)
+    return render_template('public/loc_resource_page.html', loc=loc, services=hh_db.Services, forumposts=forumposts)
 
 
 @app.route('/login',)

@@ -201,8 +201,10 @@ class Organization(Base):
     OrganizationID = Column(Integer, primary_key=True)
     Name = Column(String(length=50), nullable=False)
     HQAddress = Column(String(length=100))
-    PhoneNumber = Column(String(length=12))
+    PhoneNumber = Column(String(length=20))
     Hours = Column(String(length=200))
+    WebsiteLink = Column(String(length=100))
+    OrgImage = Column(String(length=500))
     AcceptingVolunteers = Column(Boolean)
     VolunteerNotice = Column(String(length=1000))
     HelpSeekerNotice = Column(String(length=1000))
@@ -218,13 +220,15 @@ class Organization(Base):
     Family = Column(Boolean, default=False, nullable=False)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=True)
 
-    def __init__(self, Name, HQAddress, PhoneNumber, Hours, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
+    def __init__(self, Name, HQAddress, PhoneNumber, Hours, WebsiteLink, OrgImage, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
         self.HQAddress = HQAddress
         self.PhoneNumber = PhoneNumber
         self.Hours = Hours
+        self.WebsiteLink = WebsiteLink
+        self.OrgImage = OrgImage
         self.AcceptingVolunteers = AcceptingVolunteers
         self.VolunteerNotice = VolunteerNotice
         self.HelpSeekerNotice = HelpSeekerNotice
@@ -256,6 +260,8 @@ class Program(Base):
     ProgramID = Column(Integer, primary_key=True)
     Name = Column(String(length=50), nullable=False)
     Description = Column(String(length=200))
+    WebsiteLink = Column(String(length=100))
+    ProgImage = Column(String(length=500))
     AcceptingVolunteers = Column(Boolean)
     VolunteerNotice = Column(String(length=1000))
     HelpSeekerNotice = Column(String(length=1000))
@@ -271,11 +277,13 @@ class Program(Base):
     Family = Column(Boolean, default=False, nullable=False)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=True)
 
-    def __init__(self, Name, Description, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
+    def __init__(self, Name, Description, WebsiteLink, ProgImage, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
         self.Description = Description
+        self.WebsiteLink = WebsiteLink
+        self.ProgImage = ProgImage
         self.AcceptingVolunteers = AcceptingVolunteers
         self.VolunteerNotice = VolunteerNotice
         self.HelpSeekerNotice = HelpSeekerNotice
@@ -312,6 +320,8 @@ class Locality(Base):
     Longitude = Column(Numeric(16, 14))
     PhoneNumber = Column(String(length=12), nullable=False)
     Hours = Column(String(length=200))
+    WebsiteLink = Column(String(length=100))
+    LocImage = Column(String(length=500))
     AcceptingVolunteers = Column(Boolean)
     VolunteerNotice = Column(String(length=1000))
     HelpSeekerNotice = Column(String(length=1000))
@@ -328,7 +338,7 @@ class Locality(Base):
     Family = Column(Boolean, default=False, nullable=False)
     PageID = Column(Integer, ForeignKey("RESOURCE_PAGE.PageID"), nullable=True)
 
-    def __init__(self, Name, OrganizationID, ProgramID, Address, Latitude, Longitude, PhoneNumber, Hours, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, ProvidesTransportation, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
+    def __init__(self, Name, OrganizationID, ProgramID, Address, Latitude, Longitude, PhoneNumber, Hours, WebsiteLink, LocImage, AcceptingVolunteers, VolunteerNotice, HelpSeekerNotice, ProvidesTransportation, Food, Shelter, Medicine, Clothing, Supplies, Addiction, Counseling, Legal, Veteran, Family, PageID):
         ## add all required/cannot-be-empty params
         ## primary_key *should* auto-increment on create by default
         self.Name = Name
@@ -338,7 +348,9 @@ class Locality(Base):
         self.Latitude = Latitude
         self.Longitude = Longitude
         self.PhoneNumber = PhoneNumber
-        self.Hours = Hours
+        self.Hours = Hours        
+        self.WebsiteLink = WebsiteLink
+        self.LocImage = LocImage
         self.AcceptingVolunteers = AcceptingVolunteers
         self.VolunteerNotice = VolunteerNotice
         self.HelpSeekerNotice = HelpSeekerNotice
