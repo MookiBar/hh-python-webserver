@@ -58,12 +58,48 @@ def page_index():
 @app.route('/risk_select', methods=['GET'])
 def page_risk_select():
     print('risk_select')
-    request_dict = request.args.to_dict()
-    if request_dict:
-        ## XXX TODO: actual checks...
-        request_dict['atrisk'] = 'on'
-        return redirect(url_for('search_results_page', **request_dict))
-    return render_template('public/risk_select.html', selectList=[(x,x) for x in hh_db.Services])
+    error_list = []
+    request_dict = {}
+    if request.args.get('search'):
+        request_dict = {'atrisk': 'on'}
+        set_srvcs = []
+        for srvc in hh_db.Services:
+            if request.args.get(srvc):
+                set_srvcs.append(srvc)
+        if set_srvcs:
+            for srvc in set_srvcs:
+                request_dict[srvc] = 'on'
+            return redirect(url_for('search_results_page', **request_dict))
+        else:
+            ## make an error and fall thru to the normal page
+            error_list.append('Must pick at least one desired service first.')
+    elif request.args.get('sendhelp'):
+        request_dict = {'atrisk': 'on'}
+        set_srvcs = []
+        for srvc in hh_db.Services:
+            if request.args.get(srvc):
+                set_srvcs.append(srvc)
+        if set_srvcs:
+            for srvc in set_srvcs:
+                request_dict[srvc] = 'on'
+            return redirect(url_for('send_help_page', **request_dict))
+        else:
+            ## make an error and fall thru to the normal page
+            error_list.append('Must pick at least one desired service first.')
+    return render_template('public/risk_select.html', 
+            services=hh_db.Services,
+            error_string='<br>'.join(error_list),
+            )
+
+
+@app.route('/send_help', methods=['GET','POST'])
+def send_help_page():
+    print('send_help_page')
+    errors_list = []
+    if request.args.get('sendhelp_init'):
+        ## TODO: actually process the request
+        error_list.append('ERROR: Request could not be processed!')
+    return render_template('public/help_me.html')
 
 
 @app.route('/volunteer_select', methods=['GET'])
