@@ -158,12 +158,33 @@ def search_results_page():
 def org_page():
     request_dict = request.args.to_dict()
     orgid = request.args.get('orgid')
-    orgid = 1
     with hh_db.Session.begin() as session:
         q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid)
     org = q.first()
-    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)]
+    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
     return render_template('public/org_resource_page.html', org=org, forumposts=forumposts)
+
+
+@app.route('/prog', methods=['GET'])
+def prog_page():
+    request_dict = request.args.to_dict()
+    progid = request.args.get('progid')
+    with hh_db.Session.begin() as session:
+        q = session.query(hh_db.Program).filter_by(ProgramID=progid)
+    prog = q.first()
+    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
+    return render_template('public/prog_resource_page.html', prog=prog, forumposts=forumposts)
+
+
+@app.route('/loc', methods=['GET'])
+def loc_page():
+    request_dict = request.args.to_dict()
+    locid = request.args.get('locid')
+    with hh_db.Session.begin() as session:
+        q = session.query(hh_db.Locality).filter_by(LocalityID=locid)
+    loc = q.first()
+    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
+    return render_template('public/loc_resource_page.html', loc=loc, forumposts=forumposts)
 
 
 @app.route('/login',)
