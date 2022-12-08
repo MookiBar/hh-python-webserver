@@ -32,6 +32,26 @@ app.secret_key = 'kiEIFJIefkjl4939jf9'
 args = None
 
 
+def get_current_user(_session, allow_exceptions=False):
+    try:
+        logged_in  = _session['logged_in']
+    except Exception:
+        return None
+    if logged_in:
+        try:
+            userid = session['user']
+            user = hh_db.get_user(userid)
+        except Exception as e:
+            if allow_exceptions:
+                raise e
+            else:
+                return None
+        else:
+            return user
+    else:
+        return None
+
+
 def _main():
     global app, db, db_uri, args
     args = parser.parse_args()
@@ -64,7 +84,9 @@ def flask_sleep(seconds):
 
 @app.route('/', methods=['GET'])
 def page_index():
-    return render_template('public/index.html')
+    return render_template('public/index.html',
+            user = get_current_user(session),
+            )
 
 
 @app.route('/risk_select', methods=['GET'])
@@ -98,9 +120,10 @@ def page_risk_select():
         else:
             ## make an error and fall thru to the normal page
             error_list.append('Must pick at least one desired service first.')
-    return render_template('public/risk_select.html',
+    return render_template('public/risk_select.html', 
             services=hh_db.Services,
             error_string='<br>'.join(error_list),
+            user = get_current_user(session),
             )
 
 
@@ -111,7 +134,9 @@ def send_help_page():
     if request.args.get('sendhelp_init'):
         ## TODO: actually process the request
         error_list.append('ERROR: Request could not be processed!')
-    return render_template('public/help_me.html')
+    return render_template('public/help_me.html',
+            user = get_current_user(session),
+            )
 
 
 @app.route('/volunteer_select', methods=['GET'])
@@ -122,32 +147,42 @@ def page_volunteer_select():
         ## XXX TODO: actual checks...
         request_dict['volunteer'] = 'on'
         return redirect(url_for('search_results_page', **request_dict))
-    return render_template('public/volunteer_select.html', selectList=[(x,x) for x in hh_db.Services])
+    return render_template('public/volunteer_select.html',
+            selectList=[(x,x) for x in hh_db.Services],
+            user = get_current_user(session),
+            )
 
 
 @app.route('/org_rep', methods=['GET'])
 def page_org_rep():
-    return render_template('public/org_rep.html')
+    return render_template('public/org_rep.html',
+            user = get_current_user(session),
+            )
 
 
 @app.route('/resources', methods=['GET'])
 def page_resources():
-    return render_template('public/resources.html',
+    return render_template('public/resources.html', 
             addiction=hh_links.ADDICTION_LINKS,
             health=hh_links.HEALTH_LINKS,
             mentalHealth=hh_links.MENTAL_HEALTH_LINKS,
+            user = get_current_user(session),
             )
 
 
 @app.route('/about', methods=['GET'])
 def page_about_us():
-    return render_template('public/about.html')
+    return render_template('public/about.html',
+            user = get_current_user(session), 
+            )
 
 
 @app.route('/contact', methods=['GET'])
 def page_contact_us():
     print('contact')
-    return render_template('public/contact.html')
+    return render_template('public/contact.html',
+            user = get_current_user(session),
+            )
 
 
 @app.route('/login', methods=['GET','POST'])
@@ -183,18 +218,21 @@ def login_page():
                 flask_sleep(2)
                 error_list.append('Incorrect email or password.')
     print('XXX4')
-    return render_template('public/login.html',
+    return render_template('public/login.html', 
             redirect_url=redirect_url,
             allow_login=allow_login,
             error_string='<br>'.join(error_list),
             success_string='<br>'.join(success_list),
+            user = get_current_user(session),
             )
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def page_register():
     print('register')
-    return render_template('public/register.html')
+    return render_template('public/register.html',
+            user = get_current_user(session),
+            )
 
 
 
@@ -206,23 +244,22 @@ def page_account():
     user = None
     userid = None
     try:
-        logged_in  = session['logged_in']
-    except Exception:
-        logged_in = False
+        user = get_current_user(session, allow_exceptions=True)
+    except Exception as e:
+        print(repr(e))
+        user = None
+        error_list.append('Encountered an error accessing your info.')
+    if user:
+        logged_in = True
+    else:
         error_list.append('Not logged in.')
         redirect_url = '/'
-    if logged_in:
-        try:
-            userid = session['user']
-            user = hh_db.get_user(userid)
-        except Exception:
-            error_list.append('Encountered an error accessing your info.')
-    return render_template('/public/account.html',
-            user=user,
+    return render_template('/public/account.html', 
             redirect_url=redirect_url,
             logged_in=logged_in,
             error_string='<br>'.join(error_list),
             success_string='<br>'.join(success_list),
+            user = get_current_user(session),
             )
 
 
@@ -247,6 +284,7 @@ def page_debug():
     return render_template('debug.html',
                            dbloc=args.database,
                            reqargs=request.args.to_dict(),
+                           user=get_current_user(session),
                            )
 
 
@@ -261,11 +299,12 @@ def search_results_page():
     localities = hh_db.match_all_localities(srvcs)
     organizations = hh_db.match_all_organizations(srvcs)
     programs = hh_db.match_all_programs(srvcs)
-    return render_template('public/search_results.html',
-            localities=localities,
-            organizations=organizations,
+    return render_template('public/search_results.html', 
+            localities=localities, 
+            organizations=organizations, 
             programs=programs,
             services=hh_db.Services,
+            user=get_current_user(session),
             )
 
 
@@ -277,7 +316,11 @@ def org_page():
         q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid)
     org = q.first()
     forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
-    return render_template('public/org_resource_page.html', org=org, forumposts=forumposts)
+    return render_template('public/org_resource_page.html',
+            org=org,
+            forumposts=forumposts,
+            user=get_current_user(session),
+            )
 
 
 @app.route('/prog', methods=['GET'])
@@ -288,7 +331,11 @@ def prog_page():
         q = session.query(hh_db.Program).filter_by(ProgramID=progid)
     prog = q.first()
     forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
-    return render_template('public/prog_resource_page.html', prog=prog, forumposts=forumposts)
+    return render_template('public/prog_resource_page.html',
+            prog=prog,
+            forumposts=forumposts,
+            user=get_current_user(session),
+            )
 
 
 @app.route('/loc', methods=['GET'])
@@ -299,7 +346,11 @@ def loc_page():
         q = session.query(hh_db.Locality).filter_by(LocalityID=locid)
     loc = q.first()
     forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
-    return render_template('public/loc_resource_page.html', loc=loc, forumposts=forumposts)
+    return render_template('public/loc_resource_page.html',
+            loc=loc,
+            forumposts=forumposts,
+            user=get_current_user(session),
+            )
 
 
 
