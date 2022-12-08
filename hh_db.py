@@ -4,9 +4,19 @@ from sqlalchemy import ForeignKey, Column, Integer, String, Boolean, DateTime, F
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.orm import sessionmaker
 import hashlib
+import random
 
 Base = declarative_base()
 Session = None
+
+## global for the hash algo and its length
+HASH_ALGO = hashlib.sha3_512
+HASH_ALGO_LEN_BYTES = HASH_ALGO().digest_size
+HASH_ALGO_LEN_HEX = HASH_ALGO_LEN_BYTES * 2
+## so we have a static length stated for password salts
+SALT_LEN_BYTES = 4
+SALT_LEN_HEX = SALT_LEN_BYTES * 2
+
 
 ## This should match (exact spelling and case) the booleans for org/loc/prog serices
 Services = ('Food', 'Shelter', 'Medicine', 'Clothing', 'Supplies', 'Addiction', 'Counseling', 'Legal', 'Veteran', 'Family')
@@ -118,27 +128,60 @@ def match_all_programs(services):
     return q
 
 
-def hash_password(password):
+def hash_password(password, salt):
+    """
+
+    returns str (hex of hashed password)
+    """
     ## md5(hex)=32 bytes, match length of User.password
     ## TODO: change to better hashing algo if size increases
+    if hasattr(salt, 'decode'):
+        ## salt-hex must be a string (not bytes) for the next step to work
+        salt = salt.decode()
+    ## convert to raw binary (type: bytes)
+    salt = bytes.fromhex(salt)
     if hasattr(password, 'encode'):
+        ## convert password to encoded bytes from str if necessary...
         password = password.encode('utf-8')
-    return hashlib.md5(password).hexdigest()
+    return HASH_ALGO(salt + password).hexdigest()
+
+
+def gen_passwd_salt():
+    """
+    returns str (hex of new password salt)
+    """
+    _hex_digits = '01234567890abcdef'
+    _hex = [random.choice(_hex_digits) for x in range(SALT_LEN_HEX)]
+    return ''.join(_hex)
 
 
 def check_username_password(username, password):
-    tmphash = hash_password(password)
+    """
+
+    returns int (associated userID) or None on failure
+    """
     with Session.begin() as session:
         q = session.query(User).filter_by(Email=username)
-        if q.count():
-            if q.count() > 1:
-                ## there should not be multiple! woops!
-                raise Exception('username not unique: %s' % username)
-            user = q.first()
-            if user.Email == username and user.Password == tmphash:
-                return user.UserID
-    ## made it this far? your login failed
-    return None
+        if not q.count():
+            ## user does not exist
+            return None
+        if q.count() > 1:
+            ## there should not be multiple email/users! woops!
+            raise Exception('username not unique: %s' % username)
+        user = q.first()
+        ## NOTE: email and password are type str (not bytes) here...
+        stored_email = user.Email
+        tmp_passwd_str = user.Password
+        userid = user.UserID
+    salt = tmp_passwd_str[:SALT_LEN_HEX]
+    stored_hash = tmp_passwd_str[SALT_LEN_HEX:]
+    user_hash = hash_password(password, salt)
+    if stored_hash == user_hash:
+        ## valid login attempt; return associated userID
+        return userid
+    else:
+        ## passwords dont match
+        return None
 
 
 
@@ -158,7 +201,9 @@ class User(Base):
     LastName = Column(String(length=30), nullable=False)
     Email = Column(String(length=50), nullable=False)
     PhoneNumber = Column(String(length=12))
-    Password = Column(String(length=32), nullable=False)
+    Password = Column(
+            String(length=HASH_ALGO_LEN_HEX + SALT_LEN_HEX), nullable=False
+            )
     IsAtRisk = Column(Boolean, default=False, nullable=False)
     IsVolunteer = Column(Boolean, default=False, nullable=False)
     IsRepresentative = Column(Boolean, default=False, nullable=False)
@@ -171,7 +216,8 @@ class User(Base):
         self.LastName = LastName
         self.Email = Email
         self.PhoneNumber = PhoneNumber
-        self.Password = hash_password(Password)
+        _tmp_salt = gen_passwd_salt()
+        self.Password = _tmp_salt + hash_password(Password, _tmp_salt)
         self.IsAtRisk = IsAtRisk
         self.IsVolunteer = IsVolunteer
         self.IsRepresentative = IsRepresentative
