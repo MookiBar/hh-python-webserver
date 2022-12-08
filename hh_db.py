@@ -57,6 +57,18 @@ def add_db_object(obj):
     return pkey_val
 
 
+def get_user(userid):
+    """
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        user = session.query(User).filter(User.UserID==userid).first()
+
+    return user
+
+
+
+
 def match_all_localities(services):
     """
     turn a list of services strings into a list of matching localities
@@ -588,3 +600,4 @@ class Usage_Metrics(Base):
 
     def __repr__(self):
         return "%s" %(self.MetricID)
+
