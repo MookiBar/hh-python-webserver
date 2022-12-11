@@ -72,7 +72,7 @@ def __servicesSearched():
 
     example: __servicesSearched(1)
 
-    return: array containing all services user searched
+    return: string of all services user searched
     """
     ##TODO: implement to calculate avgTimeSpent on page for total page visit
     return 0
