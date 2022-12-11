@@ -319,6 +319,7 @@ def org_page():
     return render_template('public/org_resource_page.html',
             org=org,
             forumposts=forumposts,
+            services=hh_db.Services,
             user=get_current_user(session),
             )
 
@@ -334,6 +335,7 @@ def prog_page():
     return render_template('public/prog_resource_page.html',
             prog=prog,
             forumposts=forumposts,
+            services=hh_db.Services,
             user=get_current_user(session),
             )
 
@@ -349,6 +351,7 @@ def loc_page():
     return render_template('public/loc_resource_page.html',
             loc=loc,
             forumposts=forumposts,
+            services=hh_db.Services,
             user=get_current_user(session),
             )
 
