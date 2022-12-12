@@ -178,15 +178,35 @@ def page_volunteer_select():
             )
 
 
-@app.route('/org_rep', methods=['GET'])
+@app.route('/org_rep', methods=['GET', 'POST'])
 def page_org_rep():
-    return render_template('public/org_rep.html',
-            user = get_current_user(session),
+    user = get_current_user(session)
+    orgid = request.args.get('orgid')
+    org = hh_db.get_org(orgid)
+    user = get_current_user(session)
+    resource_type = 'Organization'
+    allowed_access = False
+    resource_list = None
+    if user:
+        _tmplist = hh_db.get_orgs_assocw_user(user.UserID)
+        for i in _tmplist:
+            if i.OrganizationID = orgid:
+                allowed_access = True
+    if allowed_access:
+        if request.method == 'POST':
+            ## do all the checking and updating
+            pass
+
+    else:
+        return render_template('public/404.html')
+    return render_template('public/edit_resource_page.html',
+            user = user,
+            allowed_access=allowed_access,
             )
 
 
 @app.route('/resources', methods=['GET'])
-def page_resources():
+def page_static_resources():
     return render_template('public/resources.html', 
             addiction=hh_links.ADDICTION_LINKS,
             health=hh_links.HEALTH_LINKS,
@@ -260,7 +280,6 @@ def page_register():
             )
 
 
-
 @app.route('/account', methods=['GET','POST'])
 def page_account():
     error_list = []
@@ -268,6 +287,10 @@ def page_account():
     redirect_url = None
     user = None
     userid = None
+    ## what O/L/Ps does this user edit...
+    assoc_locs = None
+    assoc_orgs = None
+    assoc_progs = None
     #print(repr(request.get_json()))
     try:
         user = get_current_user(session, allow_exceptions=True)
@@ -277,10 +300,14 @@ def page_account():
         error_list.append('Encountered an error accessing your info.')
     if user:
         logged_in = True
+        assoc_locs = hh_db.get_locs_assocw_user(user.UserID)
+        assoc_orgs = hh_db.get_orgs_assocw_user(user.UserID)
+        assoc_progs = hh_db.get_progs_assocw_user(user.UserID)
     else:
         error_list.append('Not logged in.')
         redirect_url = '/'
     if request.method == 'POST' and True:
+        ## TODO:^ change True to the actual form name/val from submission....
         if logged_in and user:
             _changes = False
             email = request.form['Email']
