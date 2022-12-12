@@ -208,6 +208,10 @@ class User(Base):
     IsVolunteer = Column(Boolean, default=False, nullable=False)
     IsRepresentative = Column(Boolean, default=False, nullable=False)
 
+    def change_password(self, Password):
+        _tmp_salt = gen_passwd_salt()
+        self.Password = _tmp_salt + hash_password(Password, _tmp_salt)
+
     def __init__(self, FirstName, LastName, Email, PhoneNumber,
             Password, IsAtRisk, IsVolunteer, IsRepresentative):
         ## add all required/cannot-be-empty params
@@ -216,8 +220,7 @@ class User(Base):
         self.LastName = LastName
         self.Email = Email
         self.PhoneNumber = PhoneNumber
-        _tmp_salt = gen_passwd_salt()
-        self.Password = _tmp_salt + hash_password(Password, _tmp_salt)
+        self.change_password(Password)
         self.IsAtRisk = IsAtRisk
         self.IsVolunteer = IsVolunteer
         self.IsRepresentative = IsRepresentative

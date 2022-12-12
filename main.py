@@ -8,6 +8,7 @@ import hh_db
 from sqlalchemy import select
 import hh_static_resource_links as hh_links
 from time import sleep
+import re
 
 DEFAULT_CONFIG = 'hh.cfg'
 SETTINGS = {
@@ -17,6 +18,8 @@ SETTINGS = {
     'db_port': 3306,
     'db_name': 'HH',
 }
+
+MIN_PASSWORD_LEN = 10
 
 
 parser = argparse.ArgumentParser(description='HTML Flask application for HelpingHands')
@@ -51,6 +54,27 @@ def get_current_user(_session, allow_exceptions=False):
             return user
     else:
         return None
+
+
+def _password_audit_check(password):
+    if len(password) < MIN_PASSWORD_LEN:
+        return False
+    ## we could use 're' for regex, but this is faster...
+    _has_digit = False
+    _has_letter = False
+    _has_special = False
+    for i in password:
+        if i.isnumeric():
+            _has_digit = True
+        elif i.isalpha():
+            _has_letter = True
+        elif i.isprintable():
+            _has_special = True
+    if _has_digit and _has_letter and _has_special:
+        return True
+    else:
+        return False
+
 
 
 def _main():
@@ -200,10 +224,10 @@ def login_page():
         success_list.append('ALREADY LOGGED IN. Redirecting...')
         allow_login = False
         redirect_url = '/'
-    elif request.args.get('login'):
+    elif request.method == 'POST':
         print('XXX1')
-        username=request.args.get('email')
-        password=request.args.get('password')
+        username=request.form['email']
+        password=request.form['password']
         if username and password:
             print('XXX2')
             uid = hh_db.check_username_password(username, password)
@@ -244,6 +268,7 @@ def page_account():
     redirect_url = None
     user = None
     userid = None
+    #print(repr(request.get_json()))
     try:
         user = get_current_user(session, allow_exceptions=True)
     except Exception as e:
@@ -255,6 +280,41 @@ def page_account():
     else:
         error_list.append('Not logged in.')
         redirect_url = '/'
+    if request.method == 'POST' and True:
+        if logged_in and user:
+            _changes = False
+            email = request.form['Email']
+            password = request.form['Password']
+            ## display password is a bunch of tabs, remove those...
+            ## (all we know is the hash, not the plaintext)
+            password = password.strip('\t')
+            firstname = request.form['FirstName']
+            lastname = request.form['LastName']
+            phonenumber = request.form['PhoneNumber']
+            if password:
+                if _password_audit_check(password):
+                    user.change_password(password)
+                    _changes = True
+                else:
+                    error_list.append('Password does not meet minimum requirements.')
+            if firstname and firstname != user.FirstName:
+                user.FirstName = firstname
+                _changes = True
+            if lastname and lastname != user.LastName:
+                user.LastName = lastname
+                _changes = True
+            if phonenumber and phonenumber != user.PhoneNumber:
+                user.PhoneNumber = phonenumber
+                _changes = True
+            if email and email != user.Email:
+                user.Email = email
+                _changes = True
+            if _changes:
+                hh_db.add_db_object(user)
+                success_list.append('Updated account info.')
+        else:
+            error_list.append('Action not allowed.')
+
     return render_template('/public/account.html', 
             redirect_url=redirect_url,
             logged_in=logged_in,
