@@ -128,6 +128,48 @@ def match_all_programs(services):
     return q
 
 
+def get_locs_assocw_user(userid):
+    """
+    params:  int (UserID)
+
+    return list (all Locality objects associated with that user)
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        _tmplist = session.query(Locality).join(Loc_Representative).filter(
+                Loc_Representative.UserID == userid
+                ).all()
+    return _tmplist
+
+
+def get_orgs_assocw_user(userid):
+    """
+    params:  int (UserID)
+
+    return list (all Organization objects associated with that user)
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        _tmplist = session.query(Organization).join(Org_Representative).filter(
+                Org_Representative.UserID == userid
+                ).all()
+    return _tmplist
+
+
+def get_progs_assocw_user(userid):
+    """
+    params:  int (UserID)
+
+    return list (all Program objects associated with that user)
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        _tmplist = session.query(Program).join(Prog_Representative).filter(
+                Prog_Representative.UserID == userid
+                ).all()
+    return _tmplist
+
+
 def hash_password(password, salt):
     """
 
