@@ -5,6 +5,7 @@ from flask import Flask, render_template, url_for, redirect, request, session
 import argparse
 import os
 import hh_db
+from sqlalchemy import select
 import hh_static_resource_links as hh_links
 from time import sleep
 
@@ -314,11 +315,15 @@ def org_page():
     orgid = request.args.get('orgid')
     with hh_db.Session.begin() as session:
         q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid)
+        pageid = select(hh_db.Organization.PageID).where(hh_db.Organization.OrganizationID==orgid)
+        q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
+        ForumResult = session.execute(q2)
+        forumposts = ForumResult.fetchall()
     org = q.first()
-    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
     return render_template('public/org_resource_page.html',
             org=org,
             forumposts=forumposts,
+            services=hh_db.Services,
             user=get_current_user(session),
             )
 
@@ -329,11 +334,15 @@ def prog_page():
     progid = request.args.get('progid')
     with hh_db.Session.begin() as session:
         q = session.query(hh_db.Program).filter_by(ProgramID=progid)
+        pageid = select(hh_db.Program.PageID).where(hh_db.Program.ProgramID==progid)
+        q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
+        ForumResult = session.execute(q2)
+        forumposts = ForumResult.fetchall()
     prog = q.first()
-    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
     return render_template('public/prog_resource_page.html',
             prog=prog,
             forumposts=forumposts,
+            services=hh_db.Services,
             user=get_current_user(session),
             )
 
@@ -344,11 +353,15 @@ def loc_page():
     locid = request.args.get('locid')
     with hh_db.Session.begin() as session:
         q = session.query(hh_db.Locality).filter_by(LocalityID=locid)
+        pageid = select(hh_db.Locality.PageID).where(hh_db.Locality.LocalityID==locid)
+        q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
+        ForumResult = session.execute(q2)
+        forumposts = ForumResult.fetchall()
     loc = q.first()
-    forumposts = [ hh_db.Forum(UserID=1, TimeStamp=1, Comment='asdf%d' % x, PageID=1) for x in range(5)] #should not be hardcoded
     return render_template('public/loc_resource_page.html',
             loc=loc,
             forumposts=forumposts,
+            services=hh_db.Services,
             user=get_current_user(session),
             )
 
