@@ -6,6 +6,7 @@ import argparse
 import os
 import hh_db
 from sqlalchemy import select
+import metrics
 import hh_static_resource_links as hh_links
 from time import sleep
 
@@ -320,8 +321,12 @@ def org_page():
         ForumResult = session.execute(q2)
         forumposts = ForumResult.fetchall()
     org = q.first()
+    upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
+    downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
     return render_template('public/org_resource_page.html',
             org=org,
+            upresp = upVoteResponsive,
+            downresp = downVoteResponsive,
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
@@ -339,8 +344,12 @@ def prog_page():
         ForumResult = session.execute(q2)
         forumposts = ForumResult.fetchall()
     prog = q.first()
+    upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
+    downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
     return render_template('public/prog_resource_page.html',
             prog=prog,
+            upresp = upVoteResponsive,
+            downresp = downVoteResponsive,
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
@@ -358,14 +367,24 @@ def loc_page():
         ForumResult = session.execute(q2)
         forumposts = ForumResult.fetchall()
     loc = q.first()
+    upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
+    downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
+    upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
+    downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
+    upVoteSafe = metrics.__getUpVotesCount(hh_db.Safe_Vote, pageid)
+    downVoteSafe = metrics.__getDownVotesCount(hh_db.Safe_Vote, pageid)
     return render_template('public/loc_resource_page.html',
             loc=loc,
+            upclean = upVoteClean,
+            downclean = downVoteClean,
+            upresp = upVoteResponsive,
+            downresp = downVoteResponsive,
+            upsafe = upVoteSafe,
+            downsafe = downVoteSafe,
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
             )
-
-
 
 if __name__ == '__main__':
     _main()
