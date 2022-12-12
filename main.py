@@ -366,6 +366,12 @@ def loc_page():
         q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
         ForumResult = session.execute(q2)
         forumposts = ForumResult.fetchall()
+        q3 = select(hh_db.Organization.Name).where(hh_db.Locality.OrganizationID == hh_db.Organization.OrganizationID).where(hh_db.Locality.LocalityID==locid)
+        OrgResult = session.execute(q3)
+        orgs = OrgResult.fetchall()
+        q4 = select(hh_db.Program.Name).where(hh_db.Locality.ProgramID == hh_db.Program.ProgramID).where(hh_db.Locality.LocalityID==locid)
+        ProgResult = session.execute(q4)
+        progs = ProgResult.fetchall()
     loc = q.first()
     upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
     downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
@@ -381,6 +387,8 @@ def loc_page():
             downresp = downVoteResponsive,
             upsafe = upVoteSafe,
             downsafe = downVoteSafe,
+            orgs = orgs,
+            progs = progs,
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
