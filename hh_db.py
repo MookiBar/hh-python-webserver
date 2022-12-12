@@ -300,7 +300,7 @@ class Organization(Base):
         self.Legal = Legal
         self.Veteran = Veteran
         self.Family = Family
-        self.PageID = None
+        self.PageID = PageID
 
 
     def __repr__(self):
@@ -355,7 +355,7 @@ class Program(Base):
         self.Legal = Legal
         self.Veteran = Veteran
         self.Family = Family
-        self.PageID = None
+        self.PageID = PageID
 
     def __repr__(self):
         return "%s %s" %(self.ProgramID, self.Name)
@@ -423,7 +423,7 @@ class Locality(Base):
         self.Legal = Legal
         self.Veteran = Veteran
         self.Family = Family
-        self.PageID = None
+        self.PageID = PageID
 
     def __repr__(self):
         return "%s" %(self.LocalityID)
