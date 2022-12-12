@@ -3,14 +3,11 @@ from sqlalchemy import update, select
 
 def __getServicesSearched():
     """
-    TO BE CALLED WITHIN set_Metric()
     params: pageID - PageID for which we are obtaining metric
 
-    Purpose: Used to obtain the services the user was searching when they acceessed a certain PageID
+    Purpose: Used to obtain how many users clicked on a certain pageID while searching for x services
 
     example: __getServicesSearched(1)
-
-    return: string of all services user searched
     """
     ##TODO: implement 
     return 'None'
