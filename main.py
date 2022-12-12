@@ -144,13 +144,24 @@ def send_help_page():
 @app.route('/volunteer_select', methods=['GET'])
 def page_volunteer_select():
     print('volunteer_select')
-    request_dict = request.args.to_dict()
-    if request_dict:
-        ## XXX TODO: actual checks...
-        request_dict['volunteer'] = 'on'
-        return redirect(url_for('search_results_page', **request_dict))
-    return render_template('public/volunteer_select.html',
-            selectList=[(x,x) for x in hh_db.Services],
+    error_list = []
+    request_dict = {}
+    if request.args.get('search'):
+        request_dict = {'volunteer': 'on'}
+        set_srvcs = []
+        for srvc in hh_db.Services:
+            if request.args.get(srvc):
+                set_srvcs.append(srvc)
+        if set_srvcs:
+            for srvc in set_srvcs:
+                request_dict[srvc] = 'on'
+            return redirect(url_for('search_results_page', **request_dict))
+        else:
+            ## make an error and fall thru to the normal page
+            error_list.append('Must pick at least one desired service first.')
+    return render_template('public/volunteer_select.html', 
+            services=hh_db.Services,
+            error_string='<br>'.join(error_list),
             user = get_current_user(session),
             )
 
