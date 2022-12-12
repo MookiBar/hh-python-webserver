@@ -128,6 +128,53 @@ def match_all_programs(services):
     return q
 
 
+def get_org(orgid):
+    """
+    params: int (OrganizationID)
+
+    returns Organization (db object)
+    """
+    with Session.begin() as session:
+        q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid).first()
+        return q
+
+
+def get_loc(locid):
+    """
+    params: int (LocalityID)
+
+    returns Locality (db object)
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(Locality).filter_by(LocalityID=locid).first()
+        return q
+
+
+def get_org(orgid):
+    """
+    params: int (OrganizationID)
+
+    returns Organization (db object)
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(Organization).filter_by(OrganizationID=orgid).first()
+        return q
+
+
+def get_prog(progid):
+    """
+    params: int (ProgramID)
+
+    returns Program (db object)
+    """
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(Program).filter_by(ProgramID=progid).first()
+        return q
+
+
 def get_locs_assocw_user(userid):
     """
     params:  int (UserID)
