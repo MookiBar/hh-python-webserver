@@ -3,13 +3,13 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 #from flask_sqlalchemy import SQLAlchemy
 import argparse
+import datetime
 import os
 import hh_db
 from sqlalchemy import select
 import metrics
 import hh_static_resource_links as hh_links
 from time import sleep
-import re
 
 DEFAULT_CONFIG = 'hh.cfg'
 SETTINGS = {
@@ -202,7 +202,7 @@ def page_org_rep():
     if user:
         _tmplist = hh_db.get_orgs_assocw_user(user.UserID)
         for i in _tmplist:
-            if i.OrganizationID = orgid:
+            if i.OrganizationID == orgid:
                 allowed_access = True
     if allowed_access:
         if request.method == 'POST':
@@ -410,13 +410,16 @@ def search_results_page():
 
 @app.route('/org', methods=['GET'])
 def org_page():
+    error_list = []
+    success_list = []
     request_dict = request.args.to_dict()
     orgid = request.args.get('orgid')
-    with hh_db.Session.begin() as session:
-        q = session.query(hh_db.Organization).filter_by(OrganizationID=orgid)
+    org = hh_db.get_org(orgid)
+    with hh_db.Session.begin() as dbsession:
+        q = dbsession.query(hh_db.Organization).filter_by(OrganizationID=orgid)
         pageid = select(hh_db.Organization.PageID).where(hh_db.Organization.OrganizationID==orgid)
         q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
-        ForumResult = session.execute(q2)
+        ForumResult = dbsession.execute(q2)
         forumposts = ForumResult.fetchall()
     org = q.first()
     upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
@@ -428,18 +431,22 @@ def org_page():
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
+            error_string='<br>'.join(error_list),
+            success_string='<br>'.join(success_list),
             )
 
 
 @app.route('/prog', methods=['GET'])
 def prog_page():
+    error_list = []
+    success_list = []
     request_dict = request.args.to_dict()
     progid = request.args.get('progid')
-    with hh_db.Session.begin() as session:
-        q = session.query(hh_db.Program).filter_by(ProgramID=progid)
+    with hh_db.Session.begin() as dbsession:
+        q = dbsession.query(hh_db.Program).filter_by(ProgramID=progid)
         pageid = select(hh_db.Program.PageID).where(hh_db.Program.ProgramID==progid)
         q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
-        ForumResult = session.execute(q2)
+        ForumResult = dbsession.execute(q2)
         forumposts = ForumResult.fetchall()
     prog = q.first()
     upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
@@ -451,32 +458,139 @@ def prog_page():
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
+            error_string='<br>'.join(error_list),
+            success_string='<br>'.join(success_list),
             )
 
 
-@app.route('/loc', methods=['GET'])
+@app.route('/loc', methods=['GET', 'POST'])
 def loc_page():
+    error_list = []
+    success_list = []
     request_dict = request.args.to_dict()
     locid = request.args.get('locid')
-    with hh_db.Session.begin() as session:
-        q = session.query(hh_db.Locality).filter_by(LocalityID=locid)
-        pageid = select(hh_db.Locality.PageID).where(hh_db.Locality.LocalityID==locid)
+    loc = hh_db.get_loc(locid)
+    pageid = loc.PageID
+    linked_org = None
+    linked_prog = None
+    voted = None
+    if not loc:
+        return render_template('public/404.html')
+    if loc.OrganizationID:
+        linked_org = hh_db.get_org(loc.OrganizationID)
+    if loc.ProgramID:
+        linked_prog = hh_db.get_prog(loc.ProgramID)
+    user = get_current_user(session)
+    if user:
+        voted = hh_db.get_votes_from_user_on_page(user.UserID, pageid)
+    if request.method == 'POST':
+        print('POST: ')
+        for i in request.form: print(' %s: %s' % (i, request.form[i]))
+        if user:
+            print('user: %s  pageid: %s' % (user.UserID, pageid))
+            if request.form.get('newvote',''):
+                newvote = request.form.get('newvote')
+                ## get existing vote
+                ## ohhh, how i wish we used enums....
+                ## seriously, enums would've really made this cleaner...
+                ## and easier....
+                if newvote == 'upsafe' or newvote == 'downsafe':
+                    print(1)
+                    prevvote = hh_db.get_vote_objects_of_user_on_page(
+                            user.UserID, pageid, get_safe=True)
+                    if prevvote:
+                        print('c')
+                        if newvote == 'upsafe':
+                            prevvote.Vote = True
+                        else:
+                            prevvote.Vote = False
+                    else:
+                        print(2)
+                        if newvote == 'upsafe':
+                            print(3)
+                            prevvote = hh_db.Safe_Vote(user.UserID, True, pageid)
+                        else:
+                            print(4)
+                            prevvote = hh_db.Safe_Vote(user.UserID, False, pageid)
+
+                if newvote == 'upresp' or newvote == 'downresp':
+                    print(5)
+                    prevvote = hh_db.get_vote_objects_of_user_on_page(
+                            user.UserID, pageid, get_resp=True)
+                    if prevvote:
+                        print('c')
+                        if newvote == 'upresp':
+                            prevvote.Vote = True
+                        else:
+                            prevvote.Vote = False
+                    else:
+                        print(2)
+                        if newvote == 'upresp':
+                            print(3)
+                            prevvote = hh_db.Responsive_Vote(user.UserID, True, pageid)
+                        else:
+                            print(4)
+                            prevvote = hh_db.Responsive_Vote(user.UserID, False, pageid)
+
+
+
+                if newvote == 'upclean' or newvote == 'downclean':
+                    print(5)
+                    prevvote = hh_db.get_vote_objects_of_user_on_page(
+                            user.UserID, pageid, get_clean=True)
+                    if prevvote:
+                        print('c')
+                        if newvote == 'upclean':
+                            prevvote.Vote = True
+                        else:
+                            prevvote.Vote = False
+                    else:
+                        print(2)
+                        if newvote == 'upclean':
+                            print(3)
+                            prevvote = hh_db.Clean_Vote(user.UserID, True, pageid)
+                        else:
+                            print(4)
+                            prevvote = hh_db.Clean_Vote(user.UserID, False, pageid)
+
+
+
+
+
+
+                hh_db.add_db_object(prevvote)
+                voted = hh_db.get_votes_from_user_on_page(user.UserID, pageid)
+            if request.form.get('submitcomment',''):
+                newcomment = hh_db.Forum(
+                        TimeStamp=datetime.datetime.now(),
+                        Comment=request.form['Comment'],
+                        UserID=user.UserID,
+                        PageID=pageid,
+                        )
+                hh_db.add_db_object(newcomment)
+
+                print(request.form['Comment'])
+        else:
+            error_list.append('Must be logged in for that action.')
+    with hh_db.Session.begin() as dbsession:
+        ## this is so awful...and seems like it has a lot of redundancy...
+        q = dbsession.query(hh_db.Locality).filter_by(LocalityID=locid)
         q2 = select(hh_db.Forum.UserID, hh_db.Forum.TimeStamp, hh_db.Forum.Comment).where(hh_db.Forum.PageID==pageid)
-        ForumResult = session.execute(q2)
+        ForumResult = dbsession.execute(q2)
         forumposts = ForumResult.fetchall()
         q3 = select(hh_db.Organization.Name).where(hh_db.Locality.OrganizationID == hh_db.Organization.OrganizationID).where(hh_db.Locality.LocalityID==locid)
-        OrgResult = session.execute(q3)
+        OrgResult = dbsession.execute(q3)
         orgs = OrgResult.fetchall()
         q4 = select(hh_db.Program.Name).where(hh_db.Locality.ProgramID == hh_db.Program.ProgramID).where(hh_db.Locality.LocalityID==locid)
-        ProgResult = session.execute(q4)
+        ProgResult = dbsession.execute(q4)
         progs = ProgResult.fetchall()
-    loc = q.first()
     upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
     downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
     upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
     downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
     upVoteSafe = metrics.__getUpVotesCount(hh_db.Safe_Vote, pageid)
     downVoteSafe = metrics.__getDownVotesCount(hh_db.Safe_Vote, pageid)
+
     return render_template('public/loc_resource_page.html',
             loc=loc,
             upclean = upVoteClean,
@@ -485,11 +599,14 @@ def loc_page():
             downresp = downVoteResponsive,
             upsafe = upVoteSafe,
             downsafe = downVoteSafe,
-            orgs = orgs,
-            progs = progs,
+            linked_org = linked_org,
+            linked_prog = linked_prog,
             forumposts=forumposts,
             services=hh_db.Services,
             user=get_current_user(session),
+            voted=voted,
+            error_string='<br>'.join(error_list),
+            success_string='<br>'.join(success_list),
             )
 
 if __name__ == '__main__':

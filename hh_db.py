@@ -77,6 +77,62 @@ def get_user(userid):
     return user
 
 
+def get_votes_from_user_on_page(userid, pageid, 
+        get_safe=True, get_clean=True, get_resp=True):
+    votes = {}
+    with Session.begin() as session:
+        if get_safe:
+            safe_vote = session.query(Safe_Vote).filter(Safe_Vote.UserID == userid, Safe_Vote.PageID == pageid).first()
+            votes['upsafe'] = None
+            votes['downsafe'] = None
+            if safe_vote:
+                if safe_vote.Vote:
+                    votes['upsafe'] = True
+                    votes['downsafe'] = False
+                else:
+                    votes['downsafe'] = True
+                    votes['upsafe'] = False
+
+        if get_clean: 
+            clean_vote = session.query(Clean_Vote).filter(Clean_Vote.UserID == userid, Clean_Vote.PageID == pageid).first()
+            votes['upclean'] = None
+            votes['downclean'] = None
+            if clean_vote:
+                if clean_vote.Vote:
+                    votes['upclean'] = True
+                    votes['downclean'] = False
+                else:
+                    votes['downclean'] = True
+                    votes['upclean'] = False
+    
+        if get_resp:
+            resp_vote = session.query(Responsive_Vote).filter(Responsive_Vote.UserID == userid, Responsive_Vote.PageID == pageid).first()
+            votes['upresp'] = None
+            votes['downresp'] = None
+            if resp_vote:
+                if resp_vote.Vote:
+                    votes['upresp'] = True
+                    votes['downresp'] = False
+                else:
+                    votes['downresp'] = True
+                    votes['upresp'] = False
+    return votes
+
+
+def get_vote_objects_of_user_on_page(userid, pageid, 
+        get_safe=False, get_clean=False, get_resp=False):
+    votes = {}
+    with Session.begin() as session:
+        session.expire_on_commit = False
+        if get_safe:
+            safe_vote = session.query(Safe_Vote).filter(Safe_Vote.UserID == userid).filter(Safe_Vote.PageID == pageid).first()
+            return safe_vote
+        if get_clean: 
+            clean_vote = session.query(Clean_Vote).filter(Clean_Vote.UserID == userid).filter(Clean_Vote.PageID == pageid).first()
+            return clean_vote
+        if get_resp:
+            resp_vote = session.query(Responsive_Vote).filter(Responsive_Vote.UserID == userid).filter(Responsive_Vote.PageID == pageid).first()
+            return resp_vote
 
 
 def match_all_localities(services):
