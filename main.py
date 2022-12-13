@@ -190,6 +190,46 @@ def page_volunteer_select():
             )
 
 
+
+@app.route('/loc_rep', methods=['GET', 'POST'])
+def page_loc_rep():
+    user = get_current_user(session)
+    locid = request.args.get('locid')
+    loc = hh_db.get_loc(locid)
+    user = get_current_user(session)
+    resource_type = 'Locality'
+    allowed_access = False
+    resource_list = None
+    if user:
+        _tmplist = hh_db.get_locs_assocw_user(user.UserID)
+        for i in _tmplist:
+            if i.LocalityID == locid:
+                allowed_access = True
+    if allowed_access:
+        if request.method == 'POST':
+            ## do all the checking and updating
+
+            pass
+
+    upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
+    downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
+    upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
+    downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
+    upVoteSafe = metrics.__getUpVotesCount(hh_db.Safe_Vote, pageid)
+    downVoteSafe = metrics.__getDownVotesCount(hh_db.Safe_Vote, pageid)
+
+
+
+    else:
+        return render_template('public/404.html')
+    return render_template('public/edit_resource_page.html',
+            user = user,
+            allowed_access=allowed_access,
+            )
+
+
+
+
 @app.route('/org_rep', methods=['GET', 'POST'])
 def page_org_rep():
     user = get_current_user(session)
@@ -360,6 +400,8 @@ def page_account():
             error_string='<br>'.join(error_list),
             success_string='<br>'.join(success_list),
             user = get_current_user(session),
+            assoc_locs=assoc_locs,
+            assoc_orgs=assoc_progs,
             )
 
 
