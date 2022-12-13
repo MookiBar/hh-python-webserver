@@ -200,6 +200,14 @@ def page_loc_rep():
     resource_type = 'Locality'
     allowed_access = False
     resource_list = None
+
+    upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
+    downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
+    upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
+    downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
+    upVoteSafe = metrics.__getUpVotesCount(hh_db.Safe_Vote, pageid)
+    downVoteSafe = metrics.__getDownVotesCount(hh_db.Safe_Vote, pageid)
+
     if user:
         _tmplist = hh_db.get_locs_assocw_user(user.UserID)
         for i in _tmplist:
@@ -210,15 +218,6 @@ def page_loc_rep():
             ## do all the checking and updating
 
             pass
-
-    upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
-    downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
-    upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
-    downVoteResponsive = metrics.__getDownVotesCount(hh_db.Responsive_Vote, pageid)
-    upVoteSafe = metrics.__getUpVotesCount(hh_db.Safe_Vote, pageid)
-    downVoteSafe = metrics.__getDownVotesCount(hh_db.Safe_Vote, pageid)
-
-
 
     else:
         return render_template('public/404.html')
