@@ -201,6 +201,7 @@ def page_loc_rep():
     allowed_access = False
     resource_list = None
 
+    _newmetrics = metrics.get_Metrics
     upVoteClean = metrics.__getUpVotesCount(hh_db.Clean_Vote, pageid)
     downVoteClean = metrics.__getDownVotesCount(hh_db.Clean_Vote, pageid)
     upVoteResponsive = metrics.__getUpVotesCount(hh_db.Responsive_Vote, pageid)
