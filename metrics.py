@@ -95,6 +95,15 @@ def set_Metric(pageID):
 
     __updateMetric(pageID, servSearched, numForums, upVoteClean, downVoteClean, upVoteResponsive, downVoteResponsive, upVoteSafe, downVoteSafe)
 
+def get_Metrics(pageID):
+    """
+    """
+    with hh.Session.begin() as session:
+        session.expire_on_commit = False
+        q = session.query(hh.Usage_Metrics).filter_by(PageID=pageID)
+        metric = q.first()
+    return metric
+    
 def visitors(userType, pageID):
     """
     TO BE CALLED EVERY TIME A USER ACCESSES A RESOURCE PAGE
